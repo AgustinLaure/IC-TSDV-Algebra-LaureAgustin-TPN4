@@ -33,8 +33,9 @@ int main()
         //Draw
         BeginDrawing();
         BeginMode3D(camera);
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
 
+        drawWorldLines(origin);
 
         EndMode3D();
         EndDrawing();
@@ -64,4 +65,12 @@ void cameraMove(Camera3D& camera, bool& isCursorOn, float delta)
     {
         UpdateCamera(&camera, CAMERA_FREE);
     }
+}
+
+void drawWorldLines(Vector3 origin)
+{
+    DrawGrid(100, 5);
+    DrawLine3D(origin, { 10,0,0 }, RED);
+    DrawLine3D(origin, { 0,10,0 }, GREEN);
+    DrawLine3D(origin, { 0,0,10 }, BLUE);
 }
