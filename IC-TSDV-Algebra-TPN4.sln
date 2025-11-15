@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36327.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IC-TSDV-Algebra-TPN4", "IC-TSDV-Algebra-TPN4.vcxproj", "{41BDFB5E-5A31-4A7C-9A22-53C58F26F836}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{41BDFB5E-5A31-4A7C-9A22-53C58F26F836}.Debug|x64.ActiveCfg = Debug|x64
+		{41BDFB5E-5A31-4A7C-9A22-53C58F26F836}.Debug|x64.Build.0 = Debug|x64
+		{41BDFB5E-5A31-4A7C-9A22-53C58F26F836}.Release|x64.ActiveCfg = Release|x64
+		{41BDFB5E-5A31-4A7C-9A22-53C58F26F836}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {330BD2C3-4550-4BE5-ABF0-D4458468921F}
+	EndGlobalSection
+EndGlobal
