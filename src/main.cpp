@@ -6,10 +6,22 @@
 #include "Figure.h"
 #include "Frustum.h"
 
+enum class changeFrustum
+{
+	None,
+	Fov,
+	Near,
+	Far,
+	AspectRatio
+};
+
 void cameraMove(Camera3D& camera, frustum::Frustum& frustum, bool& isCursorOn, float delta);
+void drawControls(changeFrustum currentState);
 void drawWorldLines(Vector3 origin);
 void figuresUpdate(std::vector<figure::Figure*> figures, int maxFigures);
 void figuresDraw(std::vector<figure::Figure*> figures, int maxFigures);
+void input(changeFrustum& currentState, bool& shouldDrawControls);
+void changeFrustumValues(frustum::Frustum& frustum, changeFrustum currentState, float delta);
 
 int main()
 {
@@ -39,6 +51,9 @@ int main()
 	camera.fovy = 45.0f;                                // Camera field-of-view Y
 	camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
+	changeFrustum currentState = changeFrustum::None;
+	bool shouldDrawControls = true;
+
 	frustum::Frustum frustum = frustum::Frustum(camera, 1920.0f, 1080.0f, 60.0f * DEG2RAD, 0.1f, 50.f);
 
 	DisableCursor();
@@ -51,9 +66,11 @@ int main()
 		//Update
 		delta = GetFrameTime();
 		cameraMove(camera, frustum, isCursorOn, delta);
+		input(currentState, shouldDrawControls);
 		figuresUpdate(figures, maxFigures);
 		frustum.updatePos(camera);
 		frustum.update(figures, maxFigures);
+		changeFrustumValues(frustum, currentState, delta);
 
 		//Draw
 		BeginDrawing();
@@ -65,6 +82,15 @@ int main()
 		frustum.draw(camera);
 
 		EndMode3D();
+
+		DrawText("TAB toggle controls", 40, 720 - 40, 20, WHITE);
+		DrawText("ALT toggle camera move", 40, 720 - 70, 20, WHITE);
+
+		if (shouldDrawControls)
+		{
+			drawControls(currentState);
+		}
+
 		EndDrawing();
 	}
 	CloseWindow();
@@ -72,9 +98,92 @@ int main()
 	return 0;
 }
 
-void cameraMove(Camera3D& camera, frustum::Frustum& frustum, bool& isCursorOn, float delta)
+void input(changeFrustum& currentState, bool& shouldDrawControls)
 {
 	if (IsKeyPressed(KEY_TAB))
+	{
+		shouldDrawControls = !shouldDrawControls;
+	}
+
+	if (IsKeyDown(KEY_C))
+	{
+		currentState = changeFrustum::Fov;
+	}
+	else if (IsKeyDown(KEY_N))
+	{
+		currentState = changeFrustum::Near;
+	}
+	else if (IsKeyDown(KEY_F))
+	{
+		currentState = changeFrustum::Far;
+	}
+	else if (IsKeyDown(KEY_P))
+	{
+		currentState = changeFrustum::AspectRatio;
+	}
+	else
+	{
+		currentState = changeFrustum::None;
+	}
+}
+
+void changeFrustumValues(frustum::Frustum& frustum, changeFrustum currentState, float delta)
+{
+	if (currentState != changeFrustum::None)
+	{
+		float change = 0.0f;
+		const float changePerFrame = 1.0f;
+
+		if (IsKeyDown(KEY_KP_ADD))
+		{
+			change += changePerFrame * delta;
+		}
+		else if (IsKeyDown(KEY_KP_SUBTRACT))
+		{
+			change -= changePerFrame * delta;
+		}
+
+		if (change != 0)
+		{
+			switch (currentState)
+			{
+			case changeFrustum::Fov:
+				frustum.fov += change;
+				break;
+
+			case changeFrustum::Near:
+				if (frustum.near + change >= 0.05 && frustum.near + change < frustum.far)
+				{
+					frustum.near += change;
+				}
+				break;
+
+			case changeFrustum::Far:
+				if (frustum.far + change >= 0.05 && frustum.far + change > frustum.near)
+				{
+					frustum.far += change;
+				}
+				break;
+
+			case changeFrustum::AspectRatio:
+				if (frustum.width + change *300 > 0.0f && frustum.width + change * 300 > 0.0f)
+				{
+					frustum.width += change * 300;
+					frustum.height += change * 300;
+				}
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+}
+
+void cameraMove(Camera3D& camera, frustum::Frustum& frustum, bool& isCursorOn, float delta)
+{
+	if (IsKeyPressed(KEY_LEFT_ALT))
 	{
 		isCursorOn = !isCursorOn;
 
@@ -95,6 +204,43 @@ void cameraMove(Camera3D& camera, frustum::Frustum& frustum, bool& isCursorOn, f
 	}
 }
 
+void drawControls(changeFrustum currentState)
+{
+	DrawText("WASD move camera", 40, 40, 20, WHITE);
+	DrawText("SPACE BAR camera up", 40, 70, 20, WHITE);
+	DrawText("CTRL camera down", 40, 100, 20, WHITE);
+
+	DrawText("+ & - (NUMPAD) change frustum values", 40, 130, 20, WHITE);
+
+	Color fovColor = WHITE;
+	Color nearColor = WHITE;
+	Color farColor = WHITE;
+	Color aspectColor = WHITE;
+
+	switch (currentState)
+	{
+	case changeFrustum::Fov:
+		fovColor = GREEN;
+		break;
+	case changeFrustum::Near:
+		nearColor = GREEN;
+		break;
+	case changeFrustum::Far:
+		farColor = GREEN;
+		break;
+	case changeFrustum::AspectRatio:
+		aspectColor = GREEN;
+		break;
+	default:
+		break;
+	}
+
+	DrawText("C (HOLD) select FOV", 40, 160, 20, fovColor);
+	DrawText("N (HOLD) select Near", 40, 190, 20, nearColor);
+	DrawText("F (HOLD) select far", 40, 220, 20, farColor);
+	DrawText("P (HOLD) aspect ratio", 40, 250, 20, aspectColor);
+}
+
 void drawWorldLines(Vector3 origin)
 {
 	DrawGrid(100, 5);
@@ -107,7 +253,7 @@ void figuresUpdate(std::vector<figure::Figure*> figures, int maxFigures)
 {
 	for (int i = 0; i < maxFigures; i++)
 	{
-		
+
 	}
 }
 
